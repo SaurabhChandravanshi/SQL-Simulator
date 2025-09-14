@@ -36,11 +36,19 @@ export function QueryEditor({ tabId }: Props) {
     } catch {}
   };
 
+  const onClear = () => {
+    clearResult(tabId);
+    updateQuery(tabId, "");
+    if (textRef.current) {
+      textRef.current.value = "";
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <Toolbar
         onRun={() => runQuery(tabId)}
-        onClear={() => clearResult(tabId)}
+        onClear={onClear}
         onCopy={onCopy}
         onNewTab={() => createTab("New Query", tab.query)}
       />

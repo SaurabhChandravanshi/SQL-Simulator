@@ -5,8 +5,7 @@ import { X } from "lucide-react";
 import { useQueryStore } from "@/store/queryStore";
 
 export function Tabs() {
-  const { tabs, activeTabId, setActiveTab, closeTab, createTab } =
-    useQueryStore();
+  const { tabs, activeTabId, setActiveTab, closeTab } = useQueryStore();
   return (
     <div className="border-b border-gray-200 dark:border-gray-800 overflow-hidden">
       <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin py-0">
@@ -35,12 +34,6 @@ export function Tabs() {
               </button>
             </div>
           ))}
-          <button
-            className="ml-2 text-sm px-2 py-1 rounded border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 flex-shrink-0"
-            onClick={() => createTab("New Query")}
-          >
-            + New
-          </button>
         </div>
       </div>
     </div>
