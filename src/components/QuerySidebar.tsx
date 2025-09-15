@@ -4,7 +4,8 @@ import * as React from "react";
 import { useQueryStore } from "@/store/queryStore";
 
 export function QuerySidebar() {
-  const { predefined, createTab } = useQueryStore();
+  const { predefined, createTab, savedQueries, deleteSavedQuery } =
+    useQueryStore();
   const [search, setSearch] = React.useState("");
 
   const filtered = React.useMemo(() => {
@@ -48,6 +49,38 @@ export function QuerySidebar() {
           ))}
         </ul>
       </div>
+      {savedQueries.length ? (
+        <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+          <div className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Saved
+          </div>
+          <ul className="space-y-2">
+            {savedQueries.map((s) => (
+              <li
+                key={s.id}
+                className="group flex items-center justify-between gap-2"
+              >
+                <button
+                  className="flex-1 text-left p-3 rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-900 transition truncate"
+                  onClick={() => createTab(s.title, s.sql)}
+                  title={s.title}
+                >
+                  <div className="text-sm font-medium truncate">{s.title}</div>
+                  <div className="text-[11px] text-gray-500 truncate">
+                    {new Date(s.createdAt).toLocaleString()}
+                  </div>
+                </button>
+                <button
+                  className="opacity-0 group-hover:opacity-100 text-xs text-red-500 px-2 py-1"
+                  onClick={() => deleteSavedQuery(s.id)}
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </aside>
   );
 }

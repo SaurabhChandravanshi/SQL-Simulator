@@ -7,6 +7,7 @@ import { Tabs } from "@/components/Tabs";
 import { QueryEditor } from "@/components/QueryEditor";
 import { ResultsTable } from "@/components/ResultsTable";
 import { useQueryStore } from "@/store/queryStore";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Home() {
   const {
@@ -19,10 +20,37 @@ export default function Home() {
     closeTab,
     clearResult,
     updateQuery,
+    tabs,
+    setActiveTab,
   } = useQueryStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   React.useEffect(() => {
     hydrate();
   }, [hydrate]);
+  // Initialize from URL: tab and query
+  React.useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    const qParam = searchParams.get("q");
+    if (tabParam && tabs.some((t) => t.id === tabParam)) {
+      setActiveTab(tabParam);
+      if (qParam != null) {
+        updateQuery(tabParam, qParam);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync URL when active tab or its query changes
+  React.useEffect(() => {
+    if (!activeTabId) return;
+    const tab = tabs.find((t) => t.id === activeTabId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", activeTabId);
+    if (tab?.query) params.set("q", tab.query);
+    else params.delete("q");
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [activeTabId, tabs, router, searchParams]);
   const result = activeTabId ? resultsByTabId[activeTabId] : null;
   const isLoading = activeTabId ? !!loadingByTabId[activeTabId] : false;
 
@@ -55,6 +83,19 @@ export default function Home() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [activeTabId, runQuery, createTab, closeTab, clearResult, updateQuery]);
+
+  // Command palette (Ctrl/Cmd+K)
+  const [showPalette, setShowPalette] = React.useState(false);
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setShowPalette((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -104,6 +145,68 @@ export default function Home() {
           )}
         </main>
       </div>
+      {showPalette ? (
+        <div
+          className="fixed inset-0 z-40 flex items-start justify-center bg-black/40 p-4"
+          onClick={() => setShowPalette(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="border-b border-gray-200 dark:border-gray-800 p-2">
+              <input
+                autoFocus
+                placeholder="Type a command… (run, new, close, clear, export)"
+                className="w-full bg-transparent px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div className="p-2 text-sm">
+              <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+                <li
+                  className="py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 px-3"
+                  onClick={() => {
+                    if (activeTabId) void runQuery(activeTabId);
+                    setShowPalette(false);
+                  }}
+                >
+                  Run query
+                </li>
+                <li
+                  className="py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 px-3"
+                  onClick={() => {
+                    createTab("New Query");
+                    setShowPalette(false);
+                  }}
+                >
+                  New query
+                </li>
+                <li
+                  className="py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 px-3"
+                  onClick={() => {
+                    if (activeTabId) {
+                      clearResult(activeTabId);
+                      updateQuery(activeTabId, "");
+                    }
+                    setShowPalette(false);
+                  }}
+                >
+                  Clear
+                </li>
+                <li
+                  className="py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 px-3"
+                  onClick={() => {
+                    if (activeTabId) closeTab(activeTabId);
+                    setShowPalette(false);
+                  }}
+                >
+                  Close tab
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

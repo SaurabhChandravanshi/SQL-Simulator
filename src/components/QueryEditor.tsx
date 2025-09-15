@@ -14,6 +14,11 @@ export function QueryEditor({ tabId }: Props) {
     clearResult,
     createTab,
     resultsByTabId,
+    historyBack,
+    historyForward,
+    historyByTabId,
+    historyIndexByTabId,
+    historySnapshot,
   } = useQueryStore();
   const tab = useMemo(() => tabs.find((t) => t.id === tabId), [tabs, tabId]);
   const textRef = useRef<HTMLTextAreaElement | null>(null);
@@ -29,6 +34,13 @@ export function QueryEditor({ tabId }: Props) {
   const onInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateQuery(tabId, e.target.value);
   };
+
+  // Debounced history snapshot after 3s idle
+  useEffect(() => {
+    if (!tab) return;
+    const handle = setTimeout(() => historySnapshot(tabId), 3000);
+    return () => clearTimeout(handle);
+  }, [tab?.query, tabId, historySnapshot, tab]);
 
   const onCopy = async () => {
     try {
@@ -51,6 +63,13 @@ export function QueryEditor({ tabId }: Props) {
         onClear={onClear}
         onCopy={onCopy}
         onNewTab={() => createTab("New Query", tab.query)}
+        onHistoryBack={() => historyBack(tabId)}
+        onHistoryForward={() => historyForward(tabId)}
+        canHistoryBack={(historyIndexByTabId[tabId] ?? -1) > 0}
+        canHistoryForward={
+          (historyIndexByTabId[tabId] ?? -1) + 1 <
+          (historyByTabId[tabId]?.length ?? 0)
+        }
       />
       <textarea
         ref={textRef}

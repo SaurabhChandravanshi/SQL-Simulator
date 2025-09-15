@@ -143,6 +143,40 @@ export function ResultsTable({ result }: Props) {
           </button>
         </div>
       </div>
+      {/* Quick aggregations bar */}
+      <div className="text-[11px] text-gray-600 dark:text-gray-300 px-3 py-1 bg-gray-50/60 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-800 flex flex-wrap gap-3">
+        {table
+          .getAllLeafColumns()
+          .filter((c) => c.getIsVisible())
+          .map((col) => {
+            // Try to compute aggregates if column has numeric values
+            const colName = String(
+              (col.columnDef.header as string) ?? col.id
+            ).toLowerCase();
+            const looksLikeIdentifier = /(id|code|postal|zip|phone|fax)/i.test(
+              colName
+            );
+            if (looksLikeIdentifier) return null;
+            const values = table
+              .getRowModel()
+              .rows.map((r) => r.getValue(col.id))
+              .filter((v) => typeof v === "number") as number[];
+            if (values.length < 2) return null;
+            const sum = values.reduce((a, b) => a + b, 0);
+            const avg = sum / values.length;
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            return (
+              <div key={col.id} className="flex items-center gap-2">
+                <span className="font-medium capitalize">{col.id}</span>
+                <span>sum: {sum}</span>
+                <span>avg: {avg.toFixed(2)}</span>
+                <span>min: {min}</span>
+                <span>max: {max}</span>
+              </div>
+            );
+          })}
+      </div>
       <div
         className="overflow-auto scrollbar-thin flex-1 min-h-0"
         ref={containerRef}

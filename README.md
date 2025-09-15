@@ -35,6 +35,9 @@ A web-based SQL query simulator that accepts SQL queries, runs them (simulated),
 - **Command palette (Cmd/Ctrl+K)**: Quick actions (Run, New, Clear, Close)
 - **Query history (per tab)**: Back/Forward through previous runs; snapshots are taken on Run
 - **Quick aggregations**: Sum/Avg/Min/Max for numeric columns (skips identifiers like id/postal/zip)
+ - **Debounced history snapshots**: Also snapshots after ~3s of idle typing (not only on Run)
+ - **Saved queries**: Save current query and reopen later from the sidebar (with delete)
+ - **URL state sharing**: Active tab and current query are encoded in the URL for easy sharing
 
 ## Ideation & Thought Process
 
@@ -161,8 +164,11 @@ npm run dev
 - Shortcuts: Run (Cmd/Ctrl+Enter), New (Cmd/Ctrl+N), Close (Cmd/Ctrl+W), Clear (Cmd/Ctrl+L), Open palette (Cmd/Ctrl+K)
 - Command palette: hit Cmd/Ctrl+K, then type or click Run/New/Clear/Close
 - History: Back/Forward buttons in the editor toolbar navigate snapshots captured when you press Run
+- Debounced history: If you pause typing for ~3 seconds, a snapshot is created automatically
 - Columns: use the Columns dropdown to toggle visibility; filters appear under headers
 - Export: use Export CSV in the results toolbar to download what you see
+- URL sharing: the current tab and query sync to the URL; copy the link to share the current state
+- Saved: save the current query from the sidebar and reopen it later (you can delete saved items)
 
 ## Notes for Reviewers
 

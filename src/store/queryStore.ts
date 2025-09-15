@@ -10,6 +10,9 @@ type QueryState = {
   activeTabId: string | null;
   resultsByTabId: Record<string, QueryResult | null>;
   loadingByTabId: Record<string, boolean>;
+  historyByTabId: Record<string, string[]>;
+  historyIndexByTabId: Record<string, number>;
+  savedQueries: { id: string; title: string; sql: string; createdAt: number }[];
   predefined: PredefinedQuery[];
   createTab: (title?: string, query?: string) => void;
   closeTab: (id: string) => void;
@@ -17,6 +20,11 @@ type QueryState = {
   updateQuery: (id: string, query: string) => void;
   runQuery: (id: string) => Promise<void>;
   clearResult: (id: string) => void;
+  historyBack: (id: string) => void;
+  historyForward: (id: string) => void;
+  historySnapshot: (id: string) => void;
+  saveCurrentQuery: (id: string) => void;
+  deleteSavedQuery: (id: string) => void;
   hydrate: () => void;
 };
 
@@ -31,6 +39,9 @@ export const useQueryStore = create<QueryState>((set, get) => ({
   activeTabId: null,
   resultsByTabId: {},
   loadingByTabId: {},
+  historyByTabId: {},
+  historyIndexByTabId: {},
+  savedQueries: [],
   predefined: predefinedQueries,
 
   hydrate: () => {
@@ -64,7 +75,18 @@ export const useQueryStore = create<QueryState>((set, get) => ({
       updatedAt: Date.now(),
     };
     const tabs = [...get().tabs, newTab];
-    set({ tabs, activeTabId: newTab.id });
+    set({
+      tabs,
+      activeTabId: newTab.id,
+      historyByTabId: {
+        ...get().historyByTabId,
+        [newTab.id]: query ? [query] : [],
+      },
+      historyIndexByTabId: {
+        ...get().historyIndexByTabId,
+        [newTab.id]: query ? 0 : -1,
+      },
+    });
     saveToLocalStorage(STORAGE_KEY, { tabs, activeTabId: newTab.id });
   },
 
@@ -75,7 +97,17 @@ export const useQueryStore = create<QueryState>((set, get) => ({
       active = remaining.length ? remaining[remaining.length - 1].id : null;
     }
     const { [id]: _omit, ...rest } = get().resultsByTabId;
-    set({ tabs: remaining, activeTabId: active, resultsByTabId: rest });
+    const { [id]: _lOmit, ...restLoading } = get().loadingByTabId;
+    const { [id]: _hOmit, ...restHistory } = get().historyByTabId;
+    const { [id]: _hiOmit, ...restHistoryIdx } = get().historyIndexByTabId;
+    set({
+      tabs: remaining,
+      activeTabId: active,
+      resultsByTabId: rest,
+      loadingByTabId: restLoading,
+      historyByTabId: restHistory,
+      historyIndexByTabId: restHistoryIdx,
+    });
     saveToLocalStorage(STORAGE_KEY, { tabs: remaining, activeTabId: active });
   },
 
@@ -93,6 +125,19 @@ export const useQueryStore = create<QueryState>((set, get) => ({
     const tab = get().tabs.find((t) => t.id === id);
     if (!tab) return;
     set({ loadingByTabId: { ...get().loadingByTabId, [id]: true } });
+    // push query into history if different from last snapshot
+    const history = get().historyByTabId[id] ?? [];
+    const last = history.length ? history[history.length - 1] : undefined;
+    if (tab.query && tab.query !== last) {
+      const nextHistory = [...history, tab.query];
+      set({
+        historyByTabId: { ...get().historyByTabId, [id]: nextHistory },
+        historyIndexByTabId: {
+          ...get().historyIndexByTabId,
+          [id]: nextHistory.length - 1,
+        },
+      });
+    }
     const match =
       get().predefined.find(
         (p) =>
@@ -113,5 +158,66 @@ export const useQueryStore = create<QueryState>((set, get) => ({
   clearResult: (id) => {
     const results = { ...get().resultsByTabId, [id]: null };
     set({ resultsByTabId: results });
+  },
+
+  historyBack: (id) => {
+    const idx = (get().historyIndexByTabId[id] ?? -1) - 1;
+    const items = get().historyByTabId[id] ?? [];
+    if (idx >= 0 && items[idx] != null) {
+      const tabs = get().tabs.map((t) =>
+        t.id === id ? { ...t, query: items[idx], updatedAt: Date.now() } : t
+      );
+      set({
+        tabs,
+        historyIndexByTabId: { ...get().historyIndexByTabId, [id]: idx },
+      });
+      saveToLocalStorage(STORAGE_KEY, { tabs, activeTabId: get().activeTabId });
+    }
+  },
+  historyForward: (id) => {
+    const idx = (get().historyIndexByTabId[id] ?? -1) + 1;
+    const items = get().historyByTabId[id] ?? [];
+    if (idx < items.length && items[idx] != null) {
+      const tabs = get().tabs.map((t) =>
+        t.id === id ? { ...t, query: items[idx], updatedAt: Date.now() } : t
+      );
+      set({
+        tabs,
+        historyIndexByTabId: { ...get().historyIndexByTabId, [id]: idx },
+      });
+      saveToLocalStorage(STORAGE_KEY, { tabs, activeTabId: get().activeTabId });
+    }
+  },
+
+  historySnapshot: (id) => {
+    const tab = get().tabs.find((t) => t.id === id);
+    if (!tab) return;
+    const history = get().historyByTabId[id] ?? [];
+    const last = history.length ? history[history.length - 1] : undefined;
+    if (tab.query && tab.query !== last) {
+      const nextHistory = [...history, tab.query];
+      set({
+        historyByTabId: { ...get().historyByTabId, [id]: nextHistory },
+        historyIndexByTabId: {
+          ...get().historyIndexByTabId,
+          [id]: nextHistory.length - 1,
+        },
+      });
+    }
+  },
+
+  saveCurrentQuery: (id) => {
+    const tab = get().tabs.find((t) => t.id === id);
+    if (!tab) return;
+    const entry = {
+      id: uid(),
+      title: tab.title || "Saved Query",
+      sql: tab.query,
+      createdAt: Date.now(),
+    };
+    set({ savedQueries: [entry, ...get().savedQueries] });
+  },
+  deleteSavedQuery: (id) => {
+    set({ savedQueries: get().savedQueries.filter((q) => q.id !== id) });
   },
 }));
