@@ -5,6 +5,7 @@ A web-based SQL query simulator that accepts SQL queries, runs them (simulated),
 ### Live Links
 - **Deployed App**: https://sql-simulator-atlan.netlify.app
 - **GitHub Repository**: https://github.com/SaurabhChandravanshi/SQL-Simulator
+- **Walkthrough Video**: https://vimeo.com/1118689262?share=copy
 
 ## Features Implemented
 
@@ -155,7 +156,7 @@ Please see the short walkthrough video (under 3 minutes) demonstrating:
 - Creating tabs, writing queries, running and clearing
 - Loading Northwind data and virtualized scrolling
 
-Link: add your video link here
+Link: https://vimeo.com/1118689262?share=copy
 
 ## Quick Start
 
