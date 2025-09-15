@@ -35,9 +35,10 @@ A web-based SQL query simulator that accepts SQL queries, runs them (simulated),
 - **Command palette (Cmd/Ctrl+K)**: Quick actions (Run, New, Clear, Close)
 - **Query history (per tab)**: Back/Forward through previous runs; snapshots are taken on Run
 - **Quick aggregations**: Sum/Avg/Min/Max for numeric columns (skips identifiers like id/postal/zip)
- - **Debounced history snapshots**: Also snapshots after ~3s of idle typing (not only on Run)
- - **Saved queries**: Save current query and reopen later from the sidebar (with delete)
- - **URL state sharing**: Active tab and current query are encoded in the URL for easy sharing
+- **Debounced history snapshots**: Also snapshots after ~3s of idle typing (not only on Run)
+- **Saved queries**: Save current query and reopen later from the sidebar (with delete)
+- **URL state sharing**: Active tab and current query are encoded in the URL for easy sharing
+- **Chart view (Bar/Line)**: Toggle between Table and Chart; pick X (categorical) and one or more Y series (numeric). Duplicate X values auto‑aggregate.
 
 ## Ideation & Thought Process
 
@@ -98,6 +99,7 @@ After dogfooding the app as an analyst would, a few gaps became obvious: finding
 - **Icons**: Lucide React
 - **CSV Parsing**: Papa Parse
 - **Data Source**: Northwind CSV datasets
+- **Charts**: Recharts (responsive Bar/Line charts, SSR-friendly)
 
 ## Deployment
 
@@ -169,6 +171,7 @@ npm run dev
 - Export: use Export CSV in the results toolbar to download what you see
 - URL sharing: the current tab and query sync to the URL; copy the link to share the current state
 - Saved: save the current query from the sidebar and reopen it later (you can delete saved items)
+- Chart view: switch to Chart in the results toolbar; choose an X axis (string) and one or more Y axes (numbers). Values with the same X are summed.
 
 ## Notes for Reviewers
 

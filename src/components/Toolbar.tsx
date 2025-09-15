@@ -7,7 +7,6 @@ type ToolbarProps = {
   onRun: () => void;
   onClear: () => void;
   onCopy: () => void;
-  onNewTab: () => void;
   disabled?: boolean;
   onHistoryBack?: () => void;
   onHistoryForward?: () => void;
@@ -19,7 +18,6 @@ export function Toolbar({
   onRun,
   onClear,
   onCopy,
-  onNewTab,
   disabled,
   onHistoryBack,
   onHistoryForward,

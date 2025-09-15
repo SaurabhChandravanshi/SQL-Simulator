@@ -29,18 +29,18 @@ export function QueryEditor({ tabId }: Props) {
     }
   }, [tabId, tab]);
 
-  if (!tab) return null;
-
-  const onInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    updateQuery(tabId, e.target.value);
-  };
-
-  // Debounced history snapshot after 3s idle
+  // Debounced history snapshot after 3s idle (must be before any early returns)
   useEffect(() => {
     if (!tab) return;
     const handle = setTimeout(() => historySnapshot(tabId), 3000);
     return () => clearTimeout(handle);
   }, [tab?.query, tabId, historySnapshot, tab]);
+
+  if (!tab) return null;
+
+  const onInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    updateQuery(tabId, e.target.value);
+  };
 
   const onCopy = async () => {
     try {
@@ -62,7 +62,6 @@ export function QueryEditor({ tabId }: Props) {
         onRun={() => runQuery(tabId)}
         onClear={onClear}
         onCopy={onCopy}
-        onNewTab={() => createTab("New Query", tab.query)}
         onHistoryBack={() => historyBack(tabId)}
         onHistoryForward={() => historyForward(tabId)}
         canHistoryBack={(historyIndexByTabId[tabId] ?? -1) > 0}
