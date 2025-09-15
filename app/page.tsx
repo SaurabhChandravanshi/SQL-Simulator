@@ -9,11 +9,50 @@ import { ResultsTable } from "@/components/ResultsTable";
 import { useQueryStore } from "@/store/queryStore";
 
 export default function Home() {
-  const { activeTabId, resultsByTabId, hydrate, createTab } = useQueryStore();
+  const {
+    activeTabId,
+    resultsByTabId,
+    hydrate,
+    createTab,
+    runQuery,
+    closeTab,
+    clearResult,
+    updateQuery,
+  } = useQueryStore();
   React.useEffect(() => {
     hydrate();
   }, [hydrate]);
   const result = activeTabId ? resultsByTabId[activeTabId] : null;
+
+  // Keyboard shortcuts: Run (Cmd/Ctrl+Enter), New (Cmd/Ctrl+N), Close (Cmd/Ctrl+W), Clear (Cmd/Ctrl+L)
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isMod = e.metaKey || e.ctrlKey;
+      if (!isMod) return;
+      if (e.key === "Enter") {
+        if (activeTabId) {
+          e.preventDefault();
+          void runQuery(activeTabId);
+        }
+      } else if (e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        createTab("New Query");
+      } else if (e.key.toLowerCase() === "w") {
+        if (activeTabId) {
+          e.preventDefault();
+          closeTab(activeTabId);
+        }
+      } else if (e.key.toLowerCase() === "l") {
+        if (activeTabId) {
+          e.preventDefault();
+          clearResult(activeTabId);
+          updateQuery(activeTabId, "");
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeTabId, runQuery, createTab, closeTab, clearResult, updateQuery]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">

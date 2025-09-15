@@ -4,9 +4,11 @@ import * as React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
   flexRender,
   createColumnHelper,
+  type SortingState,
 } from "@tanstack/react-table";
 import type { QueryResult, TableDataRow } from "@/types";
 
@@ -14,6 +16,7 @@ type Props = { result: QueryResult };
 
 export function ResultsTable({ result }: Props) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const columns = React.useMemo(() => {
     const helper = createColumnHelper<TableDataRow>();
@@ -32,7 +35,10 @@ export function ResultsTable({ result }: Props) {
   const table = useReactTable({
     data: result.rows as TableDataRow[],
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   const rowVirtualizer = useVirtualizer({
@@ -45,12 +51,40 @@ export function ResultsTable({ result }: Props) {
   const totalSize = rowVirtualizer.getTotalSize();
   const virtualItems = rowVirtualizer.getVirtualItems();
 
+  function exportCsv() {
+    const columnOrder = table.getAllColumns().filter((c) => c.getIsVisible());
+    const headers = columnOrder.map((c) => c.id);
+    const rows = table.getRowModel().rows.map((r) =>
+      columnOrder.map((c) => {
+        const val = r.getValue(c.id);
+        if (val == null) return "";
+        const str = String(val);
+        return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+      }).join(",")
+    );
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "results.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden flex flex-col h-full">
       <div className="text-xs text-gray-600 dark:text-gray-300 px-3 py-2 flex items-center justify-between bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
         <span>
           {result.rowCount.toLocaleString()} rows • {result.executionMs} ms
         </span>
+        <button
+          onClick={exportCsv}
+          className="inline-flex items-center gap-1 px-2 py-1 rounded border border-gray-200 dark:border-gray-700 text-xs hover:bg-gray-100 dark:hover:bg-gray-800"
+          aria-label="Export results as CSV"
+        >
+          Export CSV
+        </button>
       </div>
       <div
         className="overflow-auto scrollbar-thin flex-1 min-h-0"
@@ -63,14 +97,30 @@ export function ResultsTable({ result }: Props) {
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="text-left px-2 sm:px-3 py-2 font-medium whitespace-nowrap min-w-[120px]"
+                    className="text-left px-2 sm:px-3 py-2 font-medium whitespace-nowrap min-w-[120px] select-none cursor-pointer"
+                    onClick={header.column.getToggleSortingHandler()}
+                    aria-sort={
+                      header.column.getIsSorted() === "asc"
+                        ? "ascending"
+                        : header.column.getIsSorted() === "desc"
+                        ? "descending"
+                        : "none"
+                    }
                   >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
+                    {header.isPlaceholder ? null : (
+                      <div className="inline-flex items-center gap-1">
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                        {header.column.getIsSorted() === "asc" && (
+                          <span>▲</span>
+                        )}
+                        {header.column.getIsSorted() === "desc" && (
+                          <span>▼</span>
+                        )}
+                      </div>
+                    )}
                   </th>
                 ))}
               </tr>
