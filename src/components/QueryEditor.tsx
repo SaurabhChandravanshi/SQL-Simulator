@@ -12,7 +12,6 @@ export function QueryEditor({ tabId }: Props) {
     updateQuery,
     runQuery,
     clearResult,
-    createTab,
     resultsByTabId,
     historyBack,
     historyForward,

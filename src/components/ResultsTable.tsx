@@ -176,7 +176,9 @@ export function ResultsTable({ result }: Props) {
               <select
                 className="border border-gray-200 dark:border-gray-700 rounded px-2 py-1 bg-transparent"
                 value={chartType}
-                onChange={(e) => setChartType(e.target.value as any)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setChartType(e.target.value === "line" ? "line" : "bar")
+                }
                 aria-label="Chart type"
               >
                 <option value="bar">Bar</option>
