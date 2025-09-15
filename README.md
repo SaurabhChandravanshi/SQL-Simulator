@@ -2,6 +2,10 @@
 
 A web-based SQL query simulator that accepts SQL queries, runs them (simulated), and displays results.
 
+### Live Links
+- **Deployed App**: https://sql-simulator-atlan.netlify.app
+- **GitHub Repository**: https://github.com/SaurabhChandravanshi/SQL-Simulator
+
 ## Features Implemented
 
 ### Core Requirements
@@ -32,6 +36,30 @@ A web-based SQL query simulator that accepts SQL queries, runs them (simulated),
 - **CSV Parsing**: Papa Parse
 - **Data Source**: Northwind CSV datasets
 
+## Deployment
+
+- Hosting: Netlify
+- Build command: `npm run build`
+- Publish directory: handled by Netlify Next.js runtime
+- Config: `netlify.toml` checked in at repo root
+
+## Performance
+
+- Initial load is fully static (App Router pages are prerendered)
+- Large datasets are rendered with row virtualization for smooth scrolling
+- Fonts are loaded via Next Font (optimized)
+
+### How page load time was measured
+- Open DevTools → Performance panel
+- Record page load on a throttled network (Fast 3G) and CPU (4x slowdown)
+- Capture First Contentful Paint and Time To Interactive
+
+You can also run the built-in measurement helper used during development:
+```bash
+npm run build && npm start
+# Then use DevTools Performance or Lighthouse to record metrics
+```
+
 ## Project Structure
 
 ```
@@ -58,6 +86,31 @@ app/
 ├── page.tsx            # Main application page
 └── globals.css         # Global styles
 ```
+
+## How to Run Locally
+
+```bash
+git clone https://github.com/SaurabhChandravanshi/SQL-Simulator.git
+cd SQL-Simulator
+npm install
+npm run dev
+```
+
+## Notes for Reviewers
+
+- No backend or query engine is used; results are simulated per brief
+- Multiple predefined queries are available in the sidebar; click to open as tabs
+- The editor is a simple textarea by design (no syntax validation required)
+- “Clear” clears both the editor and results; “New Query” in header and empty state
+- Table is mobile-friendly with horizontal scroll and header pinned via z-index
+
+## Walkthrough Video
+
+Please see the short walkthrough video (under 3 minutes) demonstrating:
+- Creating tabs, writing queries, running and clearing
+- Loading Northwind data and virtualized scrolling
+
+Link: add your video link here
 
 ## Quick Start
 
