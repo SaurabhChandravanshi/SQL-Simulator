@@ -25,6 +25,17 @@ A web-based SQL query simulator that accepts SQL queries, runs them (simulated),
 - **Dark Mode**: Consistent dark theme throughout
 - **Search & Discovery**: Searchable predefined query library
 
+### Power-user Additions
+- **Keyboard shortcuts**: Run (Cmd/Ctrl+Enter), New (Cmd/Ctrl+N), Close (Cmd/Ctrl+W), Clear (Cmd/Ctrl+L)
+- **Column sorting**: Click headers to sort asc/desc with visual indicator
+- **Column visibility (dropdown)**: Choose which columns are shown via a compact menu
+- **Per-column filters**: Text filters under headers; debounced client-side filtering
+- **Export CSV**: One click export of the current (visible) result set
+- **Loading skeleton**: Lightweight skeleton while a query is being resolved
+- **Command palette (Cmd/Ctrl+K)**: Quick actions (Run, New, Clear, Close)
+- **Query history (per tab)**: Back/Forward through previous runs; snapshots are taken on Run
+- **Quick aggregations**: Sum/Avg/Min/Max for numeric columns (skips identifiers like id/postal/zip)
+
 ## Ideation & Thought Process
 
 ### Mandatory (Must-have) features
@@ -49,6 +60,9 @@ A web-based SQL query simulator that accepts SQL queries, runs them (simulated),
 - Fast feedback loop → virtualized rendering and minimal UI latency
 - Occasional large data tables → stable scroll performance and sticky headers
 - Easy recovery after reload/crashes → local persistence
+
+### What changed after first pass
+After dogfooding the app as an analyst would, a few gaps became obvious: finding actions fast, organizing exploratory steps, and inspecting data quickly. That led to three pragmatic additions: a command palette, per-tab query history, and quick aggregations. These keep cognitive load low while staying within the brief (no backend or real SQL engine).
 
 ### Why these choices
 - Textarea over heavy editors: keeps bundle small, faster TTI, brief does not require syntax/engine
@@ -142,6 +156,14 @@ npm install
 npm run dev
 ```
 
+## Using It Efficiently
+
+- Shortcuts: Run (Cmd/Ctrl+Enter), New (Cmd/Ctrl+N), Close (Cmd/Ctrl+W), Clear (Cmd/Ctrl+L), Open palette (Cmd/Ctrl+K)
+- Command palette: hit Cmd/Ctrl+K, then type or click Run/New/Clear/Close
+- History: Back/Forward buttons in the editor toolbar navigate snapshots captured when you press Run
+- Columns: use the Columns dropdown to toggle visibility; filters appear under headers
+- Export: use Export CSV in the results toolbar to download what you see
+
 ## Notes for Reviewers
 
 - No backend or query engine is used; results are simulated per brief
@@ -149,6 +171,8 @@ npm run dev
 - The editor is a simple textarea by design (no syntax validation required)
 - “Clear” clears both the editor and results; “New Query” in header and empty state
 - Table is mobile-friendly with horizontal scroll and header pinned via z-index
+ - Aggregations are shown only for clearly numeric fields and skip identifier-like columns (id/code/postal/zip/phone/fax)
+ - Query history records on Run to keep snapshots meaningful and cheap; can be extended to debounce-on-idle if preferred
 
 ## Walkthrough Video
 

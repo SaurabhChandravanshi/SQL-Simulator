@@ -12,6 +12,7 @@ export default function Home() {
   const {
     activeTabId,
     resultsByTabId,
+    loadingByTabId,
     hydrate,
     createTab,
     runQuery,
@@ -23,6 +24,7 @@ export default function Home() {
     hydrate();
   }, [hydrate]);
   const result = activeTabId ? resultsByTabId[activeTabId] : null;
+  const isLoading = activeTabId ? !!loadingByTabId[activeTabId] : false;
 
   // Keyboard shortcuts: Run (Cmd/Ctrl+Enter), New (Cmd/Ctrl+N), Close (Cmd/Ctrl+W), Clear (Cmd/Ctrl+L)
   React.useEffect(() => {
@@ -75,7 +77,16 @@ export default function Home() {
           {activeTabId ? (
             <div className="flex-1 p-4 space-y-4 overflow-auto min-h-0">
               <QueryEditor tabId={activeTabId} />
-              {result ? <ResultsTable result={result} /> : null}
+              {isLoading ? (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 animate-pulse">
+                  <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded mb-3" />
+                  <div className="h-8 w-full bg-gray-200 dark:bg-gray-800 rounded mb-2" />
+                  <div className="h-8 w-full bg-gray-200 dark:bg-gray-800 rounded mb-2" />
+                  <div className="h-8 w-full bg-gray-200 dark:bg-gray-800 rounded mb-2" />
+                </div>
+              ) : result ? (
+                <ResultsTable result={result} />
+              ) : null}
             </div>
           ) : (
             <div className="flex-1 p-8 flex flex-col items-center justify-center gap-4">

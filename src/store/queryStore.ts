@@ -9,6 +9,7 @@ type QueryState = {
   tabs: SqlTab[];
   activeTabId: string | null;
   resultsByTabId: Record<string, QueryResult | null>;
+  loadingByTabId: Record<string, boolean>;
   predefined: PredefinedQuery[];
   createTab: (title?: string, query?: string) => void;
   closeTab: (id: string) => void;
@@ -29,6 +30,7 @@ export const useQueryStore = create<QueryState>((set, get) => ({
   tabs: [],
   activeTabId: null,
   resultsByTabId: {},
+  loadingByTabId: {},
   predefined: predefinedQueries,
 
   hydrate: () => {
@@ -90,6 +92,7 @@ export const useQueryStore = create<QueryState>((set, get) => ({
   runQuery: async (id) => {
     const tab = get().tabs.find((t) => t.id === id);
     if (!tab) return;
+    set({ loadingByTabId: { ...get().loadingByTabId, [id]: true } });
     const match =
       get().predefined.find(
         (p) =>
@@ -103,6 +106,8 @@ export const useQueryStore = create<QueryState>((set, get) => ({
       const resultsByTabId = { ...get().resultsByTabId, [id]: match.result };
       set({ resultsByTabId });
     }
+    const { [id]: _omit, ...restLoading } = get().loadingByTabId;
+    set({ loadingByTabId: restLoading });
   },
 
   clearResult: (id) => {
