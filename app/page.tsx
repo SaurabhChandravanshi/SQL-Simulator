@@ -9,7 +9,7 @@ import { ResultsTable } from "@/components/ResultsTable";
 import { useQueryStore } from "@/store/queryStore";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Home() {
+function HomeContent() {
   const {
     activeTabId,
     resultsByTabId,
@@ -98,7 +98,6 @@ export default function Home() {
   }, []);
 
   return (
-    <React.Suspense fallback={null}>
       <div className="h-screen flex flex-col overflow-hidden">
         <header className="border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between flex-shrink-0">
           <div className="font-semibold">SQL Simulator</div>
@@ -209,6 +208,13 @@ export default function Home() {
           </div>
         ) : null}
       </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <React.Suspense fallback={null}>
+      <HomeContent />
     </React.Suspense>
   );
 }
