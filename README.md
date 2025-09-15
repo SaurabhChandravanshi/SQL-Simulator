@@ -24,6 +24,51 @@ A web-based SQL query simulator that accepts SQL queries, runs them (simulated),
 - **Dark Mode**: Consistent dark theme throughout
 - **Search & Discovery**: Searchable predefined query library
 
+## Ideation & Thought Process
+
+### Mandatory (Must-have) features
+- Query input area (simple, reliable textarea)
+- Run action that produces a result set
+- Results table that is readable and scrollable
+- Multiple queries with corresponding datasets (predefined list)
+- Ability to clear results and reset editor
+
+### Value-add (Nice-to-have) features
+- Multi-tab workflow for parallel tasks
+- Local persistence of tabs/queries
+- Northwind CSV integration to simulate realistic data sizes
+- Virtualized table for smooth scrolling across hundreds/thousands of rows
+- Searchable predefined queries library
+- Mobile-responsive layout, pinned header, horizontal scroll without page overflow
+- Keyboard-friendly controls and accessible labels
+
+### Day-in-the-life (Analyst UX) assumptions
+- Frequent context switching between multiple queries → tabs are essential
+- Need to quickly duplicate/start new queries → prominent “New Query” in header and empty state
+- Fast feedback loop → virtualized rendering and minimal UI latency
+- Occasional large data tables → stable scroll performance and sticky headers
+- Easy recovery after reload/crashes → local persistence
+
+### Why these choices
+- Textarea over heavy editors: keeps bundle small, faster TTI, brief does not require syntax/engine
+- CSV over in-memory mocks: showcases realistic columns, types, and scale with zero backend
+- TanStack Table + Virtual: proven, composable primitives with fine control over render cost
+- Zustand: tiny, explicit store perfect for local state and persistence
+- App Router + static rendering: minimal server surface and optimal initial load
+
+## Evaluation Alignment
+
+- **Core vs advanced planning**: must-haves implemented first (editor, run, results, multi-queries), then value-adds (tabs, persistence, virtualization, search)
+- **User needs**: quick new/close tabs, persistent state, fast scrolling, readable table on small screens
+- **Feature selection rationale**: prefer small, reliable primitives; avoid unnecessary complexity (no custom editors, no backend)
+- **Value vs complexity**: each add-on (tabs, persistence, virtualization) directly improves daily usability with minimal cost
+- **Layout planning**: header actions, sidebar discovery, tabs above editor, results below; avoids overflow via min-h-0, sticky thead, responsive min-widths
+- **Anticipated actions**: new, run, clear, copy, switch tabs, search queries; each is a one-click, visible control
+- **Code quality/readability**: enterprise-style `src/` modules, typed utilities, small components, clear naming
+- **Load time**: static app, fonts via Next, small deps; no editor/monaco bloat, no backend calls on load
+- **Snappiness**: virtualized rows, memoized columns, avoid deep state; table renders remain under frame budget
+- **Fundamentals**: TypeScript, linting, accessible labels, responsive CSS, clean state transitions
+
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
